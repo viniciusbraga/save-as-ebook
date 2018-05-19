@@ -12,24 +12,13 @@ ul.chapterEditor-chapters-list li.placeholder {
     padding: 0;
     border: solid 10px #f5f5f5;
 }
-/*ul.chapterEditor-chapters-list li.placeholder:before {
-    position: absolute;
-    content: "";
-    margin-top: -5px;
-    left: -5px;
-    top: -4px;
-    border: 5px solid black;
-    border-left-color: red;
-    border-right: none;
-}*/
-
 
 #chapterEditor-Title {
     font-size: 20px;
     font-weight: bold;
     float: left;
     display: inline-block;
-    font-family: "sans-serif";
+    font-family: sans-serif;
 }
 
 #chapterEditor-ebookTitleHolder {
@@ -46,7 +35,7 @@ ul.chapterEditor-chapters-list li.placeholder {
 #chapterEditor-ebookTitle {
     padding: 5px;
     font-size: 15px;
-    font-family: "sans-serif";
+    font-family: sans-serif;
     width: 85%;
 }
 ul, ul.chapterEditor-chapters-list {
@@ -77,7 +66,7 @@ ul, ul.chapterEditor-chapters-list {
 .chapterEditor-chapter-item > input[type="text"] {
     padding: 5px;
     font-size: 15px;
-    font-family: "sans-serif";
+    font-family: sans-serif;
     width: 80%;
     border: none;
     border-bottom: solid 1px #aaa;
@@ -90,9 +79,6 @@ ul, ul.chapterEditor-chapters-list {
 }
 #chapterEditor-modalList {
     display: block;
-    /*width: 100%;*/
-    /*border-top: solid 1px black;*/
-    /*border-bottom: solid 1px black;*/
     padding: 20px;
     padding-top: 0;
 }
@@ -111,7 +97,7 @@ ul, ul.chapterEditor-chapters-list {
 .chapterEditor-text-button {
     border: none;
     font-size: 15px;
-    font-family: "sans-serif";
+    font-family: sans-serif;
     padding: 5px;
     background-color: rgba(0, 0, 0, 0);
     margin: 0 3px;
@@ -134,21 +120,48 @@ ul, ul.chapterEditor-chapters-list {
 }
 
 .chapterEditor-footer-button {
+    position: relative;
+    overflow: hidden;
     padding: 18px 20px;
     margin: 0;
     font-size: 18px;
     border: none;
     background-color: rgba(0, 0, 0, 0);
+    display: inline-block;
 }
 .chapterEditor-footer-button:hover {
     color: white;
     background-color: rgba(0, 0, 0, 1);
     cursor: pointer;
 }
-.chapterEditor-generate-button {
+.chapterEditor-footer-button:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, .5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+@keyframes ripple {
+    0%   { transform: scale( 0,  0); opacity: 1; }
+    20%  { transform: scale(25, 25); opacity: 1; }
+    100% { transform: scale(40, 40); opacity: 0; }
+}
+.chapterEditor-footer-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+.chapterEditor-footer-button.chapterEditor-generate-button {
     background-color: yellow;
 }
-.chapterEditor-cancel-button {
+.chapterEditor-footer-button.chapterEditor-generate-button:hover {
+    background-color: rgba(0, 0, 0, 1);
+}
+.chapterEditor-footer-button.chapterEditor-cancel-button {
     /*background-color: black;*/
 }
 

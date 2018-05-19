@@ -1,0 +1,99 @@
+{
+    "extName": {
+        "message": "Enregistrer comme eBook",
+        "description": "Nom de l'extension"
+    },
+    "includeStyle": {
+        "message": "Inclure le style"
+    },
+    "styleLabel": {
+        "message": "Style personnalisé :"
+    },
+    "applyStyle": {
+        "message": "Appliquer"
+    },
+    "editStyles": {
+        "message": "Éditer les styles..."
+    },
+    "savePage": {
+        "message": "Enregistrer la page"
+    },
+    "saveSelection": {
+        "message": "Enregistrer la sélection"
+    },
+    "pageChapter": {
+        "message": "Ajouter la page en tant que chapitre"
+    },
+    "selectionChapter": {
+        "message": "Ajouter la sélection en tant que chapitre"
+    },
+    "editChapters": {
+        "message": "Modifier les chapitres..."
+    },
+    "waitMessage": {
+        "message": "Merci de patienter..."
+    },
+    "chapterEditorTitle": {
+        "message": "Éditeur de chapitre"
+    },
+    "ebookTitleLabel": {
+        "message": "Titre de l'eBook :"
+    },
+    "rawPreview": {
+        "message": "Aperçu brut"
+    },
+    "remove": {
+        "message": "Retirer"
+    },
+    "removeChapters": {
+        "message": "Supprimer les chapitres"
+    },
+    "removeChaptersConfirm": {
+        "message": "Voulez-vous supprimer tous les chapitres ?"
+    },
+    "cancel": {
+        "message": "Annuler"
+    },
+    "generateEbook": {
+        "message": "Générer l'eBook..."
+    },
+    "saveChanges": {
+        "message": "Enregistrer les modifications"
+    },
+    "emptyBookWarning": {
+        "message": "Impossible de générer un eBook vide !"
+    },
+    "confirmDeleteStyle": {
+        "message": "Êtes-vous sûr de vouloir supprimer ce style ?"
+    },
+    "invalidRegex": {
+        "message": "Expression régulière invalide"
+    },
+    "styleSaved": {
+        "message": "Style enregistré !"
+    },
+    "styleEditor": {
+        "message": "Éditeur de style"
+    },
+    "selectExistingCSS": {
+        "message": "Sélectionner un style existant"
+    },
+    "orLabel": {
+        "message": "ou"
+    },
+    "createNewStyle": {
+        "message": "Créer un nouveau style"
+    },
+    "styleNameLabel": {
+        "message": "Nom"
+    },
+    "howToWriteRegexLabel": {
+        "message": "Comment écrire une expression régulière"
+    },
+    "removeStyle": {
+        "message": "Supprimer le style"
+    },
+    "saveStyle": {
+        "message": "Enregistrer le style"
+    }
+}

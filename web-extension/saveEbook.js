@@ -1,8 +1,18 @@
 var cssFileName = 'ebook.css';
+var ebookTitle = null;
+
+chrome.runtime.onMessage.addListener((obj) => {
+    if (obj.shortcut && obj.shortcut === 'build-ebook') {
+        buildEbook(obj.response);
+    } else if (obj.alert) {
+        console.log(obj.alert);
+        alert(obj.alert);
+    }
+})
 
 function getImagesIndex(allImages) {
     return allImages.reduce(function(prev, elem, index) {
-        return prev + '\n' + '<item href="images/' + elem.filename + '" id="img' + elem.filename + '" media-type="image/' + getFileExtension(elem.filename) + '"/>';
+        return prev + '\n' + '<item href="images/' + elem.filename + '" id="img' + elem.filename + '" media-type="image/' + getImageType(elem.filename) + '"/>';
     }, '');
 }
 
@@ -13,24 +23,37 @@ function getExternalLinksIndex() { // TODO
 }
 
 function buildEbookFromChapters() {
-    getEbookPages(_buildEbook);
+    getEbookTitle(function (title) {
+        ebookTitle = title;
+        if (!ebookTitle || ebookTitle.trim().length === 0) {
+            ebookTitle = 'eBook';
+        }
+        getEbookPages(_buildEbook);
+    })
 }
 
-function buildEbook(allPages) {
-    _buildEbook(allPages);
+// FIXME remove  - keep one  function
+function buildEbook(allPages, fromMenu=false) {
+    _buildEbook(allPages, fromMenu);
 }
 
 // http://ebooks.stackexchange.com/questions/1183/what-is-the-minimum-required-content-for-a-valid-epub
-function _buildEbook(allPages) {
+function _buildEbook(allPages, fromMenu=false) {
     allPages = allPages.filter(function(page) {
         return page !== null;
     });
 
     console.log('Prepare Content...');
 
-    ebookName = allPages[0].title + '.epub';
-    if (allPages[0].type === 'title') {
-        allPages.shift();
+    var ebookFileName = 'eBook.epub';
+
+    if (ebookTitle) {
+        // ~TODO a pre-processing function to apply escapeXMLChars to all page.titles
+        ebookName = escapeXMLChars(ebookTitle);
+        ebookFileName = getEbookFileName(removeSpecialChars(ebookTitle)) + '.epub';
+    } else {
+        ebookName = escapeXMLChars(allPages[0].title);
+        ebookFileName = getEbookFileName(removeSpecialChars(allPages[0].title)) + '.epub';
     }
 
     var zip = new JSZip();
@@ -60,7 +83,8 @@ function _buildEbook(allPages) {
         '<h1 class="frontmatter">Table of Contents</h1>' +
         '<ol class="contents">' +
         allPages.reduce(function(prev, page) {
-            return prev + '\n' + '<li><a href="pages/' + page.url + '">' + page.title + '</a></li>';
+            var tmpPageTitle = escapeXMLChars(page.title);
+            return prev + '\n' + '<li><a href="pages/' + page.url + '">' + tmpPageTitle + '</a></li>';
         }, '') +
         '</ol>' +
         '</nav>' +
@@ -80,9 +104,10 @@ function _buildEbook(allPages) {
         '</docTitle>' +
         '<navMap>' +
         allPages.reduce(function(prev, page, index) {
+            var tmpPageTitle = escapeXMLChars(page.title);
             return prev + '\n' +
                 '<navPoint id="ebook' + index + '" playOrder="' + (index + 1) + '">' +
-                '<navLabel><text>' + page.title + '</text></navLabel>' +
+                '<navLabel><text>' + tmpPageTitle + '</text></navLabel>' +
                 '<content src="pages/' + page.url + '" />' +
                 '</navPoint>';
         }, '') +
@@ -90,16 +115,21 @@ function _buildEbook(allPages) {
         '</ncx>'
     );
 
-    oebps.file(cssFileName, '');
+    oebps.file(cssFileName, ''); //TODO
+    var styleFolder = oebps.folder('style');
+    allPages.forEach(function(page) {
+        styleFolder.file(page.styleFileName, page.styleFileContent);
+    });
 
     var pagesFolder = oebps.folder('pages');
     allPages.forEach(function(page) {
+        var tmpPageTitle = escapeXMLChars(page.title);
         pagesFolder.file(page.url,
             '<?xml version="1.0" encoding="utf-8"?>' +
             '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">' +
             '<head>' +
-            '<title>' + page.title + '</title>' +
-            '<link href="../' + cssFileName + '" rel="stylesheet" type="text/css" />' +
+            '<title>' + tmpPageTitle+ '</title>' +
+            '<link href="../style/' + page.styleFileName + '" rel="stylesheet" type="text/css" />' +
             '</head><body>' +
             page.content +
             '</body></html>'
@@ -112,7 +142,7 @@ function _buildEbook(allPages) {
         '<metadata>' +
         '<dc:title id="t1">'+ ebookName + '</dc:title>' +
         '<dc:identifier id="db-id">isbn</dc:identifier>' +
-        '<meta property="dcterms:modified">' + new Date().toISOString() + '</meta>' +
+        '<meta property="dcterms:modified">' + new Date().toISOString().replace(/\.[0-9]+Z/i, 'Z') + '</meta>' +
         '<dc:language>en</dc:language>' +
         '</metadata>' +
         '<manifest>' +
@@ -123,9 +153,11 @@ function _buildEbook(allPages) {
             return prev + '\n' + '<item id="ebook' + index + '" href="pages/' + page.url + '" media-type="application/xhtml+xml" />';
         }, '') +
         allPages.reduce(function(prev, page, index) {
+            return prev + '\n' + '<item id="style' + index + '" href="style/' + page.styleFileName + '" media-type="text/css" />';
+        }, '') +
+        allPages.reduce(function(prev, page, index) {
             return prev + '\n' + getImagesIndex(page.images);
         }, '') +
-        // getExternalLinksIndex() +
         '</manifest>' +
         '<spine toc="ncx">' +
         allPages.reduce(function(prev, page, index) {
@@ -148,15 +180,34 @@ function _buildEbook(allPages) {
 
     var done = false;
 
+    // FIXME
+    // var saveData = (function () {
+    //         var a = document.createElement("a");
+    //         document.body.appendChild(a);
+    //         a.style = "display: none";
+    //         return function (data, fileName) {
+    //             var wURL = window.URL || window.mozURL;
+    //             var blob = new Blob([data], {type: "application/epub+zip"}),
+    //                 url = wURL.createObjectURL(blob);
+    //
+    //             chrome.downloads.download({
+    //               url: url,
+    //               filename: fileName,
+    //               saveAs: true
+    //             });
+    //         };
+    //     }());
+
     zip.generateAsync({
             type: "blob"
         })
         .then(function(content) {
             done = true;
             console.log("done !");
-            saveAs(content, ebookName);
+            saveAs(content, ebookFileName);
         });
 
+    // FIXME - remove or fix?
     setTimeout(function() {
         if (done) {
             return;
@@ -165,10 +216,8 @@ function _buildEbook(allPages) {
                 type: "blob"
             })
             .then(function(content) {
-                saveAs(content, ebookName);
+                saveAs(content, ebookFileName);
             });
     }, 60000);
-
-    removeEbook();
 
 }
